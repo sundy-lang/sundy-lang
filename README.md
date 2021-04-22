@@ -20,6 +20,30 @@ main: i32(argc: i32, argv: array(string)) do
   return result
 end main
 
+# Singletone namespace
+World:
+  g: 9.8 # Static constant (using f64 type inference)
+  
+  # Some class (literally is a namespace/package with constructor)
+  Animal:
+    # Simple constructor without arguments which makes a fairy animal
+    This: Animal() do
+      this.age: 999_999_999.0
+      this.type: @Fairy
+      
+      # Constructor can skip the value return, it returns the object of it's type by default
+    End This
+    
+    # Second constructor which makes a trivial animal (every function can use named arguments)
+    This: (
+      age: u8(0.0), # function waits for 8 bit unsigned integer or set "age" to 0
+      type: Symbol(@Mammal) # "symbol" type is an integer with syntax sugar, @Mammal is a default value for argument
+    ) do
+      this.age: age
+      this.type: type
+    End This
+  End Animal
+End World
 ```
 
 ### Some thoughts
