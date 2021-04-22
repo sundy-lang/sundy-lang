@@ -13,7 +13,7 @@
 
 ### Syntax prototype
 
-```
+```ruby
 # Just a useless function in a root of package namespace
 main: i32(argc: i32, argv: array(string)) do
   result: 0
