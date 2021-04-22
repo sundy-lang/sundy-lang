@@ -21,3 +21,16 @@ main: i32(argc: i32, argv: array(string)) do
 end main
 
 ```
+
+### Some thoughts
+
+* UTF-8 as a text encoding
+* Using of latin alphabet for a programming language terms, data type and user identifiers
+* Reading from left to right, from top to bottom
+* Minimum of reserved words (syntax terms and primitive data types)
+* Case insensitivity on all terms, data types and identifiers
+* Using of underscore character as a visual helper for all words, tags and primitive types
+* Using of equality character as a logical instruction
+* Seeking of identifiers without a namespace does in a local running block and in a current namespace (module or class), other identifiers should be prefixed by a point character with some namespace or a special object namespace ("this")
+* Using semicolons as synonyms for EOL
+* Explicit and unambiguous indication of the identifier name in the end of the logic block
