@@ -28,7 +28,7 @@ World:
   Animal:
     # Simple constructor without arguments which makes a fairy animal
     This: Animal() do
-      this.age: 999_999_999.0
+      this.age: r64(999_999_999.0)
       this.type: @Fairy
       
       # Constructor can skip the value return, it returns the object of it's type by default
@@ -36,7 +36,7 @@ World:
     
     # Second constructor which makes a trivial animal (every function can use named arguments)
     This: (
-      age: u8(0.0), # function waits for 8 bit unsigned integer or set "age" to 0
+      age: r64(0.0), # function waits for 64 bit unsigned float number or set "age" to 0
       type: Symbol(@Mammal) # "symbol" type is an integer with syntax sugar, @Mammal is a default value for argument
     ) do
       this.age: age
