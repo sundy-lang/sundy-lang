@@ -66,5 +66,5 @@ Currently Sundy is in active development of design and making a working prototyp
 
 ```sh
 cd ruby-parser
-docker-compose run sundy src/main.rb --src examples/hello.sundy --lex tmp/hello.lex
+docker-compose run sundy ./ruby-parser --src examples/hello.sundy --doc tmp/hello.md
 ```
