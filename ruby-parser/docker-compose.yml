@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: ruby_sundy
+    command: src/main.rb
+    volumes:
+      - .:/app:rw
