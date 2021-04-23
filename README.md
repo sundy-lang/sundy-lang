@@ -35,7 +35,7 @@ World:
     End This
     
     # Second constructor which makes a trivial animal (every function can use named arguments)
-    This: (
+    This: Animal(
       age: r64(0.0), # function waits for 64 bit unsigned float number or set "age" to 0
       type: Symbol(@Mammal) # "symbol" type is an integer with syntax sugar, @Mammal is a default value for argument
     ) do
