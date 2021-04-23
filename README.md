@@ -59,3 +59,12 @@ End World
 * Using semicolons as synonyms for EOL
 * Explicit and unambiguous indication of the identifier name in the end of the logic block
 * Every file is a package with its own root namespace, file name should be used as a package name
+
+### Running
+
+Currently Sundy is in active development of design and making a working prototype of compiler based on Ruby & Docker.
+
+```sh
+cd ruby-parser
+docker-compose run sundy examples/hello.sundy
+```
