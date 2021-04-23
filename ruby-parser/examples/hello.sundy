@@ -1,0 +1,25 @@
+### Useless example on Sundy programming language
+##
+## Theoretically it's just put "Hello World!" message on the IO device
+##
+## By the way - ## is a special comment lines for making the doc
+##
+
+# File name "hello.sundy" makes "Hello" namespace as root for the code in this file
+
+# Find and load "mylib.sundy" as "MyLib" namespace
+import mylib
+
+# Constructor of the object namespace for "Hello"
+this: hello() do
+  # Allocate a public constant in the object namespace with type invocation by a special "String" constructor
+  this.message: "Hello World!"
+  # Constructors can skip the value return because it returns an object namespace everytime
+end this
+
+# Object method "hi" which returns the same object for a chainable calls feature
+this.hi: hello() do
+  # Call external function "puts" from the imported namespace "mylib"
+  mylib.puts(this.message)
+  return this
+end this.hi

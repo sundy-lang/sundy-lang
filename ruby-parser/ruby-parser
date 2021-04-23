@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require_relative 'src/cli.rb'
+
+Cli.new.tokenize.grow_ast.transpile.compile
