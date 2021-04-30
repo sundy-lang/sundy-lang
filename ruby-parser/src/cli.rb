@@ -12,7 +12,8 @@ class Cli
           key = value.upcase[/[A-Z0-9\-]+/]
         else
           usage_info
-          raise "Wrong usage!"
+          puts "❗️ Wrong usage."
+          exit
         end # if
       else
         if value.index('--') == 0
@@ -29,14 +30,16 @@ class Cli
 
     if !@params['--SRC'] || !File.exists?(@params['--SRC'])
       usage_info
-      raise 'Wrong usage, no source file!'
+      puts '❗️ Wrong usage, no source file.'
+      exit
     end # if
 
     if match = @params['--SRC'].upcase.match(/([A-Z0-9_]+)(\.[A-Z]+)*\z/)
       @root_namespace = match[1]
     else
       usage_info
-      raise 'Wrong source file name format!'
+      puts '❗️ Wrong source file name format.'
+      exit
     end # if
 
     greeting
@@ -89,13 +92,24 @@ class Cli
       puts
     end # if
 
+    if @params['--LEX']
+      if f = File.new(@params['--LEX'], 'w')
+        @tokens.each do |token|
+          value = token.value.strip
+          f.puts "#{"%12s" % "#{token.line_num}:#{token.char_num}"} > #{token.type}#{value.empty? ? '' : "(#{value})"}"
+        end # each
+        f.close
+      end # if
+    end # if
+
     if @lexer_stats[:tokens][nil]
       puts '🤠 Unknown tokens:'
       @tokens.each do |token|
-        puts "🤠    #{token.value.inspect}" if !token.value
+        puts "🤠#{"%14s" % "#{token.line_num}:#{token.char_num}"} > #{token.value.inspect}" if !token.type
       end # each
       puts
-      raise 'Unknown tokens found!' 
+      puts '❗️ Unknown tokens found.' 
+      exit
     end # if
 
     if @params['--DOC']
@@ -120,16 +134,6 @@ class Cli
         @code_tokens << token
       end # if
     end # each
-
-    if @params['--LEX']
-      if f = File.new(@params['--LEX'], 'w')
-        @tokens.each do |token|
-          value = token.value.strip
-          f.puts "#{token.type}#{value.empty? ? '' : "(#{value})"}"
-        end # each
-        f.close
-      end # if
-    end # if
 
     return self
   end # tokenize
