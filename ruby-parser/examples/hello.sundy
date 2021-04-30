@@ -2,7 +2,7 @@
 ##
 ## Theoretically it's just put "Hello World!" message on the IO device
 ##
-## By the way - ## is a special comment lines for making the doc
+## By the way - "##" is a special comment lines for making the doc
 ##
 
 # File name "hello.sundy" makes "Hello" namespace as root for the code in this file
