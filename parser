@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+# Target of this script: Convert a file of lexems list to a file of AST
+
+## EBNF v0.0.1:
+#  FILE = {MODULE_ELEMENT} EOF.
+#  MODULE_ELEMENT = EOLS | FN.
+#  EOLS = EOL {EOL}.
+#  FN = LOCAL_ID COLON FN_DESCRIPTION {EOL} FN_BODY {EOL} END LOCAL_ID EOL.
+#  FN_DESCRIPTION = LOCAL_ID OPEN_PRIORITY_BRACE {EOL} [FN_ARGS_DECLARATION] {EOL} CLOSE_PRIORITY_BRACE EOL.
+#  FN_ARGS_DECLARATION = LOCAL_ID COLON FN_ARG_TYPE {COMMA {EOL} LOCAL_ID COLON FN_ARG_TYPE}.
+#  FN_ARG_TYPE = LOCAL_ID [OPEN_PRIORITY_BRACE {EOL} [FN_ARG_TYPE | CONST_VALUE] {EOL} CLOSE_PRIORITY_BRACE].
+#  CONST_VALUE = INTEGER | STRING.
+#  FN_BODY = {RETURN_STATEMENT}.
+#  RETURN_STATEMENT = RETURN CONST_VALUE.
+
+# Code example for v0.0.1:
+# main: u32(argc: u32, argv: list(string));
+#   return 0;
+# end main;
+
+require 'json'
+require_relative 'lib/cli.rb'
+require_relative 'lib/parser.rb'
+
+# Parse CLI arguments
+
+cli = Cli.new(
+  extension: 'lex.json',
+  util: 'parser',
+)
+
+# Make the AST from lexems list
+
+if f = File.new("#{cli.source_path}/#{cli.source_name}.#{cli.source_extension}", 'r')
+  parser = Parser.new(
+    lexems: JSON.parse(f.read).map{|r| Hash[r.map{|k,v| [k.to_sym, v]}] },
+    source_name: cli.source_name,
+  )
+
+  parser.parse
+
+  f.close
+else
+  puts "❗️ Can't read the source file '#{cli.source_path}'"
+  exit
+end # if
+
+# Save the AST to JSON file
+
+if f = File.new("#{cli.destination_path}/#{cli.source_name}.ast.json", 'w')
+  f.puts(JSON.generate(parser.ast))
+  f.close
+else
+  puts "❗️ Can't save the AST file '#{cli.destination_path}/#{cli.source_name}.ast.json'"
+  exit
+end # if

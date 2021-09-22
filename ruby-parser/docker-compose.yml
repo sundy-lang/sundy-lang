@@ -1,9 +1,0 @@
-version: '3'
-
-services:
-  sundy:
-    build: .
-    container_name: ruby_sundy
-    command: ./ruby-parser
-    volumes:
-      - .:/app:rw

@@ -14,57 +14,22 @@
 ### Syntax prototype
 
 ```ruby
+# V0.0.1
 # Just a useless function in a root of package namespace
 main: i32(argc: i32, argv: array(string)) do
-  result: 0
-  return result
+  return 0
 end main
-
-# Singletone namespace
-World:
-  g: 9.8 # Static constant (using f64 type inference)
-  
-  # Some class (literally is a namespace/package with constructor)
-  Animal:
-    # Simple constructor without arguments which makes a fairy animal
-    This: Animal() do
-      this.age: r64(999_999_999.0)
-      this.type: @Fairy
-      
-      # Constructor can skip the value return, it returns the object of it's type by default
-    End This
-    
-    # Second constructor which makes a trivial animal (every function can use named arguments)
-    This: Animal(
-      age: r64(0.0), # function waits for 64 bit unsigned float number or set "age" to 0
-      type: Symbol(@Mammal) # "symbol" type is an integer with syntax sugar, @Mammal is a default value for argument
-    ) do
-      this.age: age
-      this.type: type
-    End This
-  End Animal
-End World
 ```
-
-### Some thoughts
-
-* UTF-8 as a text encoding
-* Using of latin alphabet for a programming language terms, data types and user identifiers
-* Reading from left to right, from top to bottom
-* Minimum of reserved words (syntax terms and primitive data types)
-* Case insensitivity on all terms, data types and identifiers
-* Using of underscore character as a visual helper for all words, tags and primitive types
-* Using of equality character as a logical instruction
-* Seeking of identifiers without a namespace does in a local running block and in a current namespace (module or class), other identifiers should be prefixed by a point character with some namespace or a special object namespace ("this")
-* Using semicolons as synonyms for EOL
-* Explicit and unambiguous indication of the identifier name in the end of the logic block
-* Every file is a package with its own root namespace, file name should be used as a package name
 
 ### Running
 
 Currently Sundy is in active development of design and making a working prototype of compiler based on Ruby & Docker.
 
 ```sh
-cd ruby-parser
-docker-compose run sundy ./ruby-parser --src examples/hello.sundy --doc tmp/hello.md
+./lexer --in tmp --out tmp hello_world
+./parser --in tmp --out tmp hello_world
 ```
+
+### Versions
+
+* v0.0.1-ruby (ruby lexer, documentation generator and parser, function "main", blank "array", "i32" and "string" type definitions, "return" reserved word)

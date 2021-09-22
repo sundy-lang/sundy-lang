@@ -1,20 +1,20 @@
-class Token
+class Lexem
   def initialize options = {}
     # raise "Unknown type #{options[:type].inspect}" if !options[:type].is_a?(Symbol)
     
-    @char_num = options[:char_num]
-    @line_num = options[:line_num]
+    @col = options[:col]
+    @line = options[:line]
     @type = options[:type]
     @value = options[:value]
   end # initialize
 
-  def char_num
-    @char_num
-  end # char_num
+  def col
+    @col
+  end # col
 
-  def line_num
-    @line_num
-  end # line_num
+  def line
+    @line
+  end # line
 
   def type
     @type
@@ -23,4 +23,8 @@ class Token
   def value
     @value
   end # value
-end # Token
+
+  def value= new_value
+    @value = new_value
+  end # value=
+end # Lexem

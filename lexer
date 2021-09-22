@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+# Target of this script: Convert a file of source code to a file of lexems list
+
+require 'json'
+require_relative 'lib/cli.rb'
+require_relative 'lib/lexer.rb'
+
+# Parse CLI arguments
+
+cli = Cli.new(
+  extension: 'sundy',
+  util: 'lexer',
+)
+
+# Make a list of lexems
+if f = File.new("#{cli.source_path}/#{cli.source_name}.#{cli.source_extension}", 'r')
+  lexer = Lexer.new(f.read)
+  f.close
+else
+  puts "❗️ Can't read the source file '#{cli.source_path}'"
+  exit
+end # if
+
+lexer.parse
+
+# Save documentation comments
+
+if f = File.new("#{cli.destination_path}/#{cli.source_name}.md", 'w')
+  f.write(lexer.docs.map{|v| v.strip }.join("\n"))
+  f.close
+else
+  puts "❗️ Can't save the docs file '#{cli.destination_path}/#{cli.source_name}.md'"
+  exit
+end # if
+
+# Show debug information for development mode
+
+lexer.warning_comments.each do |message|
+  puts "⭐️ #{message}"
+end # each
+
+# Save lexems list to JSON file
+
+if f = File.new("#{cli.destination_path}/#{cli.source_name}.lex.json", 'w')
+  f.puts '['
+  f.puts lexer.code.map{ |lexem|
+    '  ' + JSON.generate({
+      line:  lexem.line,
+      col:   lexem.col,
+      type:  lexem.type,
+      value: lexem.value.to_s.strip,
+    }) 
+  }.join(",\n")
+  f.puts ']'
+  f.close
+else
+  puts "❗️ Can't save the LEX file '#{cli.destination_path}/#{cli.source_name}.lex.json'"
+  exit
+end # if
