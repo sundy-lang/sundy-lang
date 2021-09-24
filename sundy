@@ -1,0 +1,7 @@
+#!/bin/sh
+
+./lexer --in $1 --out $1 $2
+./parser --in $1 --out $1 $2
+./translator --in $1 --out $1 $2
+llc -filetype=obj $1/$2.ll
+gcc $1/$2.o -o $1/$2

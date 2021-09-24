@@ -28,6 +28,9 @@ Currently Sundy is in active development of design and making a working prototyp
 ```sh
 ./lexer --in tmp --out tmp hello_world
 ./parser --in tmp --out tmp hello_world
+./translator --in tmp --out tmp hello_world
+llc -filetype=obj tmp/hello_world.ll
+gcc tmp/hello_world.o -o tmp/hello_world
 ```
 
 ### Versions

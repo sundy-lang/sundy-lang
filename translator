@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+# Target of this script: Convert a file with AST to a file with LLVM code
+
+require 'json'
+require_relative 'lib/cli.rb'
+require_relative 'lib/translator.rb'
+
+# Parse CLI arguments
+
+cli = Cli.new(
+  extension: 'ast.json',
+  util: 'translator',
+)
+
+# Make a list of lexems
+if f = File.new("#{cli.source_path}/#{cli.source_name}.#{cli.source_extension}", 'r')
+  translator = Translator.new(JSON.parse(f.read))
+  f.close
+else
+  puts "❗️ Can't read the AST file '#{cli.source_path}'"
+  exit
+end # if
+
+translator.translate
+translator.compile
+
+# Save LLVM code
+
+if f = File.new("#{cli.destination_path}/#{cli.source_name}.ll", 'w')
+  f.puts(translator.compile)
+  # f.puts [
+  #   "define i32 @main() #0 {",
+  #   "  %1 = alloca i32, align 4",
+  #   "  store i32 0, i32* %1, align 4",
+  #   "  ret i32 0",
+  #   "}",
+  # ].join("\n")
+  f.close
+else
+  puts "❗️ Can't save the LLVM file '#{cli.destination_path}/#{cli.source_name}.ll'"
+  exit
+end # if
