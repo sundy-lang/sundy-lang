@@ -19,11 +19,11 @@ class FnNode < BaseNode
                 if name == end_name
                   if parser.consume(:EOL)
                     return {
-                      type: 'FUNCTION',
+                      type: 'FN',
                       name: name,
                       return_type: return_type,
                       args: args,
-                      body: body,
+                      childs: body,
                     }
                   end # if
                 end # if

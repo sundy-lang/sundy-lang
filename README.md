@@ -23,14 +23,13 @@ end main
 
 ### Running
 
-Currently Sundy is in active development of design and making a working prototype of compiler based on Ruby & Docker.
+Currently Sundy is in active development of design and making a working prototype of transpiler to C based on Ruby.
 
 ```sh
 ./lexer --in tmp --out tmp hello_world
 ./parser --in tmp --out tmp hello_world
-./translator --in tmp --out tmp hello_world
-llc -filetype=obj tmp/hello_world.ll
-gcc tmp/hello_world.o -o tmp/hello_world
+./to_c --in tmp --out tmp hello_world
+gcc tmp/hello_world.c -o tmp/hello_world
 ```
 
 ### Versions

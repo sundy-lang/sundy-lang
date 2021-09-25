@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+# Target of this script: Convert a file with AST to a file with C code
+
+require 'json'
+require_relative 'lib/cli.rb'
+require_relative 'lib/to_c.rb'
+
+# Parse CLI arguments
+
+cli = Cli.new(
+  extension: 'ast.json',
+  util: 'translator',
+)
+
+# Make a list of lexems
+if f = File.new("#{cli.source_path}/#{cli.source_name}.#{cli.source_extension}", 'r')
+  transpiler = ToC.new
+  transpiler.parse(buffer: JSON.parse(f.read))
+  f.close
+else
+  puts "❗️ Can't read the AST file '#{cli.source_path}'"
+  exit
+end # if
+
+# Save C code
+if f = File.new("#{cli.destination_path}/#{cli.source_name}.c", 'w')
+  f.puts(transpiler.compile)
+  f.close
+else
+  puts "❗️ Can't save the LLVM file '#{cli.destination_path}/#{cli.source_name}.ll'"
+  exit
+end # if

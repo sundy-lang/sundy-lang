@@ -2,6 +2,5 @@
 
 ./lexer --in $1 --out $1 $2
 ./parser --in $1 --out $1 $2
-./translator --in $1 --out $1 $2
-llc -filetype=obj $1/$2.ll
-gcc $1/$2.o -o $1/$2
+./to_c --in $1 --out $1 $2
+gcc $1/$2.c -o $1/$2
