@@ -87,7 +87,7 @@ class FnNode < BaseNode
             return {
               type: 'TYPE',
               name: name,
-              value: value,
+              childs: [value],
             }
           end # if
         end # if
@@ -104,7 +104,7 @@ class FnNode < BaseNode
   end # self.parse_arg_type
 
   # EBNF 0.0.1:
-  # FN_BODY = {RETURN_STATEMENT | EOL}.
+  # FN_BODY = {CONSTANT_DEFINITION_STATEMENT | RETURN_STATEMENT | EOL}.
   def self.parse_body parser
     saved_code_index = parser.lexem_index
     body = []
@@ -112,6 +112,8 @@ class FnNode < BaseNode
     loop do
       if BaseNode.parse_eols(parser)
       elsif sentence = self.parse_return_statement(parser)
+        body << sentence
+      elsif sentence = self.parse_constant_definition_statement(parser)
         body << sentence
       else break
       end # if
@@ -125,6 +127,35 @@ class FnNode < BaseNode
     return
   end # self.parse_body
 
+  # EBNF 0.0.3:
+  # CONSTANT_DEFINITION_STATEMENT = LOCAL_ID COLON (INTEGER | FN_CALL_STATEMENT) EOL.
+  def self.parse_constant_definition_statement parser
+    saved_code_index = parser.lexem_index
+
+    if name = LocalIdNode.parse(parser)
+      if parser.consume(:COLON)
+        if value = parser.consume(:INTEGER)
+          return {
+            type: 'CONSTANT',
+            name: name,
+            value_type: 'INTEGER',
+            value: value[:value].to_i,
+          }
+        elsif fn_call = self.parse_fn_call(parser)
+          return {
+            type: 'CONSTANT',
+            name: name,
+            value_type: 'FN_CALL',
+            value: fn_call,
+          }
+        end # if
+      end # if
+    end # if
+
+    parser.lexem_index = saved_code_index
+    return
+  end # self.parse_constant_definition_statement
+
   # EBNF 0.0.1:
   # FN_DESCRIPTION = LOCAL_ID OPEN_PRIORITY_BRACE {EOL} [FN_ARGS_DECLARATION] {EOL} CLOSE_PRIORITY_BRACE EOL.
   def self.parse_description parser
@@ -134,8 +165,6 @@ class FnNode < BaseNode
       if parser.consume(:OPEN_PRIORITY_BRACE)
         BaseNode.parse_eols(parser)
         args = FnNode.parse_args_declaration(parser)
-        # puts '>>>'
-        # puts args.inspect
         BaseNode.parse_eols(parser)
 
         if parser.consume(:CLOSE_PRIORITY_BRACE)
@@ -153,8 +182,62 @@ class FnNode < BaseNode
     return
   end # self.parse_description
 
+  # EBNF 0.0.3:
+  # FN_DESCRIPTION = LOCAL_ID OPEN_PRIORITY_BRACE {EOL} [FN_CALL_ARGS] {EOL} CLOSE_PRIORITY_BRACE EOL.
+  def self.parse_fn_call parser
+    saved_code_index = parser.lexem_index
+
+    if name = LocalIdNode.parse(parser)
+      if parser.consume(:OPEN_PRIORITY_BRACE)
+        BaseNode.parse_eols(parser)
+        args = FnNode.parse_fn_call_args(parser)
+        BaseNode.parse_eols(parser)
+
+        if parser.consume(:CLOSE_PRIORITY_BRACE)
+          if parser.consume(:EOL)
+            return {
+              type: 'FN_CALL',
+              name: [parser.current_node[:name], name].join('_'), 
+              childs: args,
+            }
+          end # if
+        end # if
+      end # if
+    end # if
+
+    parser.lexem_index = saved_code_index
+    return
+  end # self.parse_fn_call
+
+  # EBNF 0.0.3:
+  # FN_CALL_ARGS = LOCAL_ID {COMMA {EOL} LOCAL_ID}.
+  def self.parse_fn_call_args parser
+    saved_code_index = parser.lexem_index
+    args = []
+
+    loop do
+      if args.empty? || parser.consume(:COMMA)
+        BaseNode.parse_eols(parser)
+        if name = LocalIdNode.parse(parser)
+          args << name
+        end # if
+
+        return if !name
+      else
+        break
+      end # if
+    end # loop
+
+    if !args.empty?
+      return args
+    end # if
+
+    parser.lexem_index = saved_code_index
+    return
+  end # self.parse_fn_call_args
+
   # EBNF 0.0.1:
-  # RETURN_STATEMENT = RETURN INTEGER EOL.
+  # RETURN_STATEMENT = RETURN (INTEGER | LOCAL_ID) EOL.
   def self.parse_return_statement parser
     saved_code_index = parser.lexem_index
 
@@ -164,6 +247,12 @@ class FnNode < BaseNode
           type: 'RETURN',
           value_type: 'INTEGER',
           value: value[:value].to_i,
+        }
+      elsif value = parser.consume(:LOCAL_ID)
+        return {
+          type: 'RETURN',
+          value_type: 'LOCAL_ID',
+          value: value[:value].upcase.gsub('_', ''),
         }
       end # if
     end # if

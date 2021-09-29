@@ -54,6 +54,10 @@ class Parser
     return lexem
   end # consume
 
+  def current_node
+    @current_node
+  end # current_node
+
   def lexem_index
     @lexem_index
   end # lexem_index
@@ -71,4 +75,8 @@ class Parser
       end
     end # while
   end # parse
+
+  def root_node
+    @root_node
+  end # root_node
 end # Parser

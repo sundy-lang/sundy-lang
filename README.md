@@ -14,10 +14,15 @@
 ### Syntax prototype
 
 ```ruby
-# V0.0.1
-# Just a useless function in a root of package namespace
-main: i32(argc: i32, argv: array(string)) do
-  return 0
+## V0.0.3
+# Just a useless function
+calculate: i32(value: i32)
+  return value
+end calculate
+
+main: i32(argc: i32, argv: list(string))
+  result: calculate(argc)
+  return result
 end main
 ```
 
@@ -33,5 +38,6 @@ gcc tmp/hello_world.c -o tmp/hello_world
 ```
 
 ### Versions
-
-* v0.0.1-ruby (ruby lexer, documentation generator and parser, function "main", blank "array", "i32" and "string" type definitions, "return" reserved word)
+* v0.0.3 (+ call function wtih i32 argument)
+* v0.0.2 (+ define i32 local constant)
+* v0.0.1 (ruby lexer, documentation generator and parser, function "main", blank "array", "i32" and "string" type definitions, "return" reserved word)

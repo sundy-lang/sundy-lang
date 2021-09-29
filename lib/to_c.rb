@@ -1,3 +1,4 @@
+require_relative 'to_c/constant_node.rb'
 require_relative 'to_c/fn_node.rb'
 require_relative 'to_c/module_node.rb'
 require_relative 'to_c/return_node.rb'
@@ -11,6 +12,8 @@ class ToC
     when 'I16' then 'short int'
     when 'I32' then 'int'
     when 'I64' then 'long int'
+    when 'LIST' then '[]'
+    when 'STRING' then 'char*'
     when 'U8' then 'char'
     when 'U16' then 'short unisgned int'
     when 'U32' then 'unsigned int'
@@ -45,6 +48,7 @@ class ToC
     options[:context] = self
 
     case options[:buffer]['type']
+    when 'CONSTANT' then ConstantNode.parse(options)
     when 'FN' then FnNode.parse(options)
     when 'MODULE' then ModuleNode.parse(options)
     when 'RETURN' then ReturnNode.parse(options)
@@ -56,7 +60,7 @@ class ToC
     code = []
 
     @functions.each do |name, options|
-      code << "#{ToC.get_type(options[:return_type])} #{name}() {"
+      code << "#{ToC.get_type(options[:return_type])} #{name}(#{options[:args].values.join(', ')}) {"
       code += options[:body].map{|l| "  #{l};"}
       code << "}"
       code << ''
@@ -64,8 +68,9 @@ class ToC
 
     # Add "main" function if it exists in root module
     if @functions["#{@root_name}_MAIN"]
-      code << "#{ToC.get_type(@functions["#{@root_name}_MAIN"][:return_type])} main() {"
-      code << "  return #{@root_name}_MAIN();"
+      options = @functions["#{@root_name}_MAIN"]
+      code << "#{ToC.get_type(@functions["#{@root_name}_MAIN"][:return_type])} main(#{options[:args].values.join(', ')}) {"
+      code << "  return #{@root_name}_MAIN(#{options[:args].keys.join(', ')});"
       code << "}"
       code << ''
     end # if

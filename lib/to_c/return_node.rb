@@ -4,6 +4,7 @@ class ReturnNode
     
     case buffer[:value_type]
     when 'INTEGER' then "return #{buffer[:value]}"
+    when 'LOCAL_ID' then "return #{buffer[:value]}"
     end # case
   end # self.parse
 end
