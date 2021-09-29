@@ -31,10 +31,7 @@ end main
 Currently Sundy is in active development of design and making a working prototype of transpiler to C based on Ruby.
 
 ```sh
-./lexer --in tmp --out tmp hello_world
-./parser --in tmp --out tmp hello_world
-./to_c --in tmp --out tmp hello_world
-gcc tmp/hello_world.c -o tmp/hello_world
+./sundy examples v003
 ```
 
 ### Versions
