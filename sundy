@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./lexer --in $1 --out $1 $2
-./parser --in $1 --out $1 $2
-./to_c --in $1 --out $1 $2
+./lexer --in $1 --out $1 $2 &&
+./parser --in $1 --out $1 $2 &&
+./to_c --in $1 --out $1 $2 &&
 gcc $1/$2.c -o $1/$2
