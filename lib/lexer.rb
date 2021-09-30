@@ -5,36 +5,35 @@ class Lexer
     /\A##[^\n]*\z/                    => :DOC,
     /\A#![^\n]*\z/                    => :WARN,
     /\A#[^\n]*\z/                     => :COMMENT,
-    # /\A'([^']|\\')*[']?\z/            => :STRING,
-    # /\A"([^"]|\\")*["]?\z/            => :STRING,
-    # /\A`([^`]|\\`)*[`]?\z/            => :ACTIVE_STRING,
-    # /\A\/([^\/]|\\\/)*[\/]?\z/        => :REGEXP,
-    # /\A@[a-z0-9_]+\z/i                => :SYMBOL,
-    # /\A[-]?[0-9_]+.[0-9_]+\z/         => :FLOAT,
-    /\A[-]?[0-9_]+\z/                 => :INTEGER,
-    # /\A0x[0-9a-f_]+\z/i               => :HEX,
-    # /\A0o[0-7_]+\z/                   => :OCT,
-    # /\A0b[01]+\z/                     => :BIN,
+    /\A'([^']|\\')*[']?\z/            => :STRING,
+    /\A"([^"]|\\")*["]?\z/            => :STRING,
+    /\A`([^`]|\\`)*[`]?\z/            => :SMART_STRING,
+    /\A\/([^\/]|\\\/)*[\/]?\z/        => :REGEXP,
+    /\A@[a-z0-9_]+\z/i                => :TAG,
+    /\A[-]?[0-9_]+.[0-9_]+\z/         => :FLOAT,
+    /\A[-]?[0-9_]+\z/                 => :INT,
+    /\A0x[0-9a-f_]+\z/i               => :HEX,
+    /\A0o[0-7_]+\z/                   => :OCT,
+    /\A0b[01]+\z/                     => :BIN,
     /\A[;\r\n]+\z/                    => :EOL,
     /\A[ \t]+\z/                      => :WORD_BREAK,
-    # /\AALIAS\z/i                      => :ALIAS,
+    /\AELSE\z/i                       => :ELSE,
     /\AEND\z/i                        => :END,
-    # /\AIMPORT\z/i                     => :IMPORT,
-    # /\APARENT\z/i                     => :PARENT,
+    /\AIF\z/i                         => :IF,
+    /\AIMPORT\z/i                     => :IMPORT,
+    /\ALOOP\z/i                       => :LOOP,
+    /\APARENT\z/i                     => :PARENT,
     /\ARETURN\z/i                     => :RETURN,
-    # /\ATHIS\z/i                       => :THIS,
-    # /\ATHIS.[a-z_][.a-z0-9_]*[?]?\z/i => :THIS_ID,
-    /\A[a-z_][a-z0-9_]*[?]?\z/i       => :LOCAL_ID,
-    # /\A[a-z_][.a-z0-9_]*[?]?\z/i      => :ID,
+    /\ATHIS\z/i                       => :THIS,
+    /\A[a-z_][.a-z0-9_]*[?]?\z/i      => :ID,
     ':'                               => :COLON,
     ','                               => :COMMA,
-    '.'                               => :DOT,
     '('                               => :OPEN_PRIORITY_BRACE,
     ')'                               => :CLOSE_PRIORITY_BRACE,
-    # '['                               => :LIST_BEGIN,
-    # ']'                               => :LIST_END,
-    # '{'                               => :BLOCK_BEGIN,
-    # '}'                               => :BLOCK_END,
+    '['                               => :OPEN_FILTER_BRACE,
+    ']'                               => :CLOSE_FILTER_BRACE,
+    '{'                               => :OPEN_BLOCK_BRACE,
+    '}'                               => :CLOSE_BLOCK_BRACE,
   }
 
   def initialize buffer
@@ -147,9 +146,12 @@ class Lexer
         @col += buffer_col
       end # if
 
-      # Value postpocessing - upcase
+      # Value postpocessing
       case found.type
-      when :ID, :THIS_ID then found.value = found.value.upcase.split('.')
+      # Save ID as array of normalized strings
+      when :ID then found.value = found.value.upcase.gsub('_', '').split('.')
+      # Save string without quotes
+      when :SMART_STRING, :STRING then found.value = found.value[1..-2]
       end
 
       case found.type

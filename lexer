@@ -48,7 +48,7 @@ if f = File.new("#{cli.destination_path}/#{cli.source_name}.lex.json", 'w')
       line:  lexem.line,
       col:   lexem.col,
       type:  lexem.type,
-      value: lexem.value.to_s.strip,
+      value: lexem.value.is_a?(Array) ? lexem.value : lexem.value.to_s.strip,
     }) 
   }.join(",\n")
   f.puts ']'
