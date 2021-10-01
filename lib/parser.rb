@@ -1,82 +1,167 @@
-require_relative 'parser/module_node.rb'
-
 ## EBNF v0.0.1:
 #  FILE = {MODULE_ELEMENT} EOF.
-#  MODULE_ELEMENT = EOL | FN.
-#  FN = LOCAL_ID COLON FN_DESCRIPTION {EOL} FN_BODY {EOL} END LOCAL_ID EOL.
-#  FN_DESCRIPTION = LOCAL_ID OPEN_PRIORITY_BRACE {EOL} [FN_ARGS_DECLARATION] {EOL} CLOSE_PRIORITY_BRACE EOL.
-#  FN_ARGS_DECLARATION = LOCAL_ID COLON FN_ARG_TYPE {COMMA {EOL} LOCAL_ID COLON FN_ARG_TYPE}.
-#  FN_ARG_TYPE = LOCAL_ID [OPEN_PRIORITY_BRACE {EOL} [FN_ARG_TYPE | CONST_VALUE] {EOL} CLOSE_PRIORITY_BRACE].
-#  CONST_VALUE = INTEGER.
-#  FN_BODY = {RETURN_STATEMENT}.
-#  RETURN_STATEMENT = RETURN CONST_VALUE.
+#  MODULE_ELEMENT = EOLS | FUNCTION_DEFINITION.
+#  FUNCTION_DEFINITION = ID COLON FUNCTION_DESCRIPTION EOLS FUNCTION_BODY EOLS END ID EOL.
+#  FUNCTION_DESCRIPTION = ID OPEN_PRIORITY_BRACE EOLS [FUNCTION_ARGS_DECLARATION] EOLS CLOSE_PRIORITY_BRACE EOL.
+#  FUNCTION_ARGS_DECLARATION = ID COLON FUNCTION_ARG_TYPE {COMMA EOLS ID COLON FUNCTION_ARG_TYPE}.
+#  FUNCTION_ARG_TYPE = ID [OPEN_PRIORITY_BRACE EOLS [FUNCTION_ARG_TYPE | CONST_VALUE] EOLS CLOSE_PRIORITY_BRACE].
+#  PRIMITIVE_VALUE = INTEGER | STRING.
+#  FUNCTION_BODY = {RETURN}.
+#  RETURN = RETURN PRIMITIVE_VALUE.
+#  EOLS = {EOL}.
 
-# Code example for v0.0.1:
-# main: u32(argc: u32, argv: list(string));
-#   return 0;
-# end main;
+require_relative 'parser/constant_parser.rb'
+require_relative 'parser/function_parser.rb'
+require_relative 'parser/module_parser.rb'
 
 class Parser
+  include ConstantParser
+  include FunctionParser
+  include ModuleParser
+
   def initialize options
     @root_node = {
-      type: 'MODULE',
+      type: 'MODULE_DEFINITION',
       name: options[:source_name].upcase.gsub('_', '').gsub('/', '.'),
-      childs: [],
+      constants: {},
+      functions: {},
+      modules: {},
     }
 
     @current_node = @root_node
     @lexem_buffer = options[:lexems]
     @lexem_index = 0
+    @unexpected_lexem_index = 0
   end # initialize
 
   def ast
     @root_node
   end
 
-  # Get lexems from code buffer
-  def consume expected = nil
-    lexem = @lexem_buffer[@lexem_index]
+  # Consume one or group of expected lexems from the buffer
+  def consume expected, options = {}
+    saved_code_index = @lexem_index
 
-    if expected.is_a?(Array)
-      lexem = nil if !expected.include?(lexem[:type].to_sym)
-    elsif expected.is_a?(Symbol)
-      lexem = nil if expected != lexem[:type].to_sym
+    if lexem_types.include?(expected)
+      if result = @lexem_buffer[@lexem_index]
+        return if expected != result[:type].to_sym
+    
+        @lexem_index += 1
+        return result[:value]
+      end # if
+    else
+      method_name = "consume_#{expected}".downcase.to_sym
+
+      if methods.include?(method_name)
+        if result = send(method_name)
+          return result
+        end # if
+      else
+        raise "Unknown method '#{method_name}'"
+      end # if
+
+      @unexpected_lexem_index = @lexem_index if @lexem_index > @unexpected_lexem_index
+      @lexem_index = saved_code_index
+      return
     end # if
-
-    # if lexem
-    #   puts "CONSUMED #{lexem.inspect}"
-    # else
-    #   puts "CHECKED #{expected.inspect} FROM #{@lexem_buffer[@lexem_index].inspect}"
-    # end # if 
-
-    @lexem_index += 1 if lexem
-
-    return lexem
   end # consume
 
-  def current_node
-    @current_node
-  end # current_node
+  # EBNF: EOLS = {EOL}.
+  def consume_eols
+    i = 0
 
-  def lexem_index
-    @lexem_index
-  end # lexem_index
+    loop do
+      if consume(:EOL)
+        i += 1 
+      else
+        break
+      end # if
+    end # loop
 
-  def lexem_index= value
-    @lexem_index = value
-  end # lexem_index=
+    return i > 0 ? true : nil
+  end # consume_eols
 
+  # EBNF: LOCAL_ID = {LATIN_LETTER | UNDERSCORE} {LATIN_LETTER | DECIMAL_DIGIT | UNDERSCORE}.
+  def consume_local_id
+    if id = consume(:ID)
+      local_id = id.first
+      if id.size == 1 && !reserved_words.include?(local_id)
+        return local_id
+      end # if
+    end # if
+  end # consume_local_id
+
+  # EBNF: PRIMITIVE_VALUE = INTEGER.
+  def consume_primitive_value
+    if value = consume(:INT)
+      return value
+    end
+  end # consume_primitive_value
+
+  def lexem_types
+    [
+      :DOC,
+      :WARN,
+      :COMMENT,
+      :STRING,
+      :STRING,
+      :SMART_STRING,
+      :REGEXP,
+      :TAG,
+      :FLOAT,
+      :INT,
+      :HEX,
+      :OCT,
+      :BIN,
+      :EOL,
+      :WORD_BREAK,
+      :ELSE,
+      :END,
+      :IF,
+      :IMPORT,
+      :LOOP,
+      :PARENT,
+      :RETURN,
+      :THIS,
+      :ID,
+      :COLON,
+      :COMMA,
+      :OPEN_PRIORITY_BRACE,
+      :CLOSE_PRIORITY_BRACE,
+      :OPEN_FILTER_BRACE,
+      :CLOSE_FILTER_BRACE,
+      :OPEN_BLOCK_BRACE,
+      :CLOSE_BLOCK_BRACE,
+    ]
+  end # lexem_types
+
+  # Parse the buffer
   def parse
     while @lexem_index < @lexem_buffer.size
-      if element = ModuleNode.parse_element(self, parent: @root_node)
-        @root_node[:childs] << element if element.is_a?(Hash)
+      if elements = consume(:MODULE_ELEMENTS)
+        if elements.is_a?(Hash)
+          @root_node[:constants] = elements[:constants]
+          @root_node[:functions] = elements[:functions]
+          @root_node[:modules] = elements[:modules]
+        end # if
       else
-        raise "Can't parse #{@root_node[:name]} module at #{@lexem_buffer[@lexem_index][:line]}:#{@lexem_buffer[@lexem_index][:col]}"
+        raise "Can't parse lexem at #{@lexem_buffer[@unexpected_lexem_index][:line]}:#{@lexem_buffer[@unexpected_lexem_index][:col]}"
       end
     end # while
   end # parse
 
-  def root_node
-    @root_node
-  end # root_node
+  def reserved_words
+    [
+      'ELSE',
+      'END',
+      'IF',
+      'IMPORT',
+      'LOOP',
+      'PARENT',
+      'PRIVATE',
+      'PUBLIC',
+      'RETURN',
+      'THIS',
+    ]
+  end # reserved_words
 end # Parser

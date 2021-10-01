@@ -3,7 +3,7 @@
 
 require 'json'
 require_relative 'lib/cli.rb'
-require_relative 'lib/to_c.rb'
+require_relative 'lib/c_compiler.rb'
 
 # Parse CLI arguments
 
@@ -14,8 +14,11 @@ cli = Cli.new(
 
 # Make a list of lexems
 if f = File.new("#{cli.source_path}/#{cli.source_name}.#{cli.source_extension}", 'r')
-  transpiler = ToC.new
-  transpiler.parse(buffer: JSON.parse(f.read))
+  compiler = CCompiler.new(ast: JSON.parse(f.read))
+  # puts '--- AST BEGIN ---'
+  # puts JSON.generate(compiler.ast)
+  # puts '--- AST END ---'
+  compiler.parse(compiler.ast)
   f.close
 else
   puts "❗️ Can't read the AST file '#{cli.source_path}'"
@@ -24,9 +27,9 @@ end # if
 
 # Save C code
 if f = File.new("#{cli.destination_path}/#{cli.source_name}.c", 'w')
-  f.puts(transpiler.compile)
+  f.puts(compiler.compile)
   f.close
 else
-  puts "❗️ Can't save the LLVM file '#{cli.destination_path}/#{cli.source_name}.ll'"
+  puts "❗️ Can't save C file '#{cli.destination_path}/#{cli.source_name}.c'"
   exit
 end # if
