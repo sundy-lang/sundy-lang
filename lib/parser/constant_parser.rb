@@ -3,6 +3,17 @@ module ConstantParser
   def consume_constant_definition
     if name = consume(:LOCAL_ID)
       if consume(:COLON)
+        if value = consume(:FLOAT)
+          if consume(:EOLS)
+            return {
+              type: 'CONSTANT_DEFINITION',
+              name: name,
+              value_type: 'FLOAT',
+              value: value.to_f,
+            }
+          end # if
+        end # if
+
         if value = consume(:INT)
           if consume(:EOLS)
             return {
@@ -10,6 +21,17 @@ module ConstantParser
               name: name,
               value_type: 'INT',
               value: value.to_i,
+            }
+          end # if
+        end # if
+
+        if value = consume(:STRING)
+          if consume(:EOLS)
+            return {
+              type: 'CONSTANT_DEFINITION',
+              name: name,
+              value_type: 'STRING',
+              value: value,
             }
           end # if
         end # if

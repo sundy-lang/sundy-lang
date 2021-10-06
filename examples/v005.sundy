@@ -1,0 +1,33 @@
+### Sundy test example for version 0.0.4
+##
+## Features:
+##
+## 0.0.5:
+## * define string local constant
+## * define f64 local constant
+##
+## 0.0.4:
+## * return of result by a function call with i32 arguments or without arguments
+##
+## 0.0.3:
+## * define local constant as a result of function call wtih i32 arguments
+##
+## 0.0.2:
+## * define i32 local constant
+##
+## 0.0.1:
+## * lexer with recognition of comments and automatic documentation comments
+## * "main" function parsing
+## * "return" of integer value or local constant
+
+calculate: i32(value: i32)
+  return value
+end calculate
+
+main: i32(argc: i32, argv: list(string))
+  string_const: "Hello world!"
+  float_const: 3.1415926
+  int_const: argc
+  result: calculate(int_const)
+  return result
+end main

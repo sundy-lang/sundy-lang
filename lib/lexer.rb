@@ -10,7 +10,7 @@ class Lexer
     /\A`([^`]|\\`)*[`]?\z/            => :SMART_STRING,
     /\A\/([^\/]|\\\/)*[\/]?\z/        => :REGEXP,
     /\A@[a-z0-9_]+\z/i                => :TAG,
-    /\A[-]?[0-9_]+\.[0-9_]+\z/         => :FLOAT,
+    /\A[-]?[0-9_]+\.[0-9_]+\z/        => :FLOAT,
     /\A[-]?[0-9_]+\z/                 => :INT,
     /\A0x[0-9a-f_]+\z/i               => :HEX,
     /\A0o[0-7_]+\z/                   => :OCT,
@@ -106,8 +106,13 @@ class Lexer
               )
             end # if
           else # Regexp
+            if !@char_buffer.empty? && (accumulator + @char_buffer[0..1]).match(rule)
+              accumulator << @char_buffer[0]
+              @char_buffer = @char_buffer[1 .. -1]
+            end
+
             if accumulator.match(rule)
-              if (@char_buffer.empty? || !(accumulator + @char_buffer[0]).match(rule))
+              if @char_buffer.empty? || !(accumulator + @char_buffer[0]).match(rule)
                 found = Lexem.new(
                   col: @col, 
                   line: @line,
