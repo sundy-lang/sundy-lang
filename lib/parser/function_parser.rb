@@ -85,17 +85,16 @@ module FunctionParser
   # EBNF: FUNCTION_BODY = {CONSTANT_DEFINITION | RETURN | EOL}.
   def consume_function_body
     body = []
-
     loop do
       if consume(:EOLS)
       elsif statement = consume(:FUNCTION_RETURN)
         body << statement
       elsif statement = consume(:CONSTANT_DEFINITION)
         body << statement
-      else break
+      else
+        break
       end # if
     end # loop
-
     return body if !body.empty?
   end # consume_function_body
 

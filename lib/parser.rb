@@ -29,6 +29,7 @@ class Parser
     }
 
     @current_node = @root_node
+    @consumption_stack = []
     @lexem_buffer = options[:lexems]
     @lexem_index = 0
     @unexpected_lexem_index = 0
@@ -41,6 +42,7 @@ class Parser
   # Consume one or group of expected lexems from the buffer
   def consume expected, options = {}
     saved_code_index = @lexem_index
+    @consumption_stack << [expected, @lexem_buffer[@lexem_index]]
 
     if lexem_types.include?(expected)
       if result = @lexem_buffer[@lexem_index]
@@ -91,10 +93,19 @@ class Parser
     end # if
   end # consume_local_id
 
+  # EBNF: LOCAL_ID_VALUE = LOCAL_ID EOLS.
+  def consume_local_id_value
+    if id = consume(:LOCAL_ID)
+      if consume(:EOLS)
+        return id
+      end # if
+    end # if
+  end # consume_local_id_value
+
   # EBNF: PRIMITIVE_VALUE = INTEGER.
   def consume_primitive_value
     if value = consume(:INT)
-      return value
+      return value.to_i
     end
   end # consume_primitive_value
 
@@ -145,7 +156,7 @@ class Parser
           @root_node[:modules] = elements[:modules]
         end # if
       else
-        raise "Can't parse lexem at #{@lexem_buffer[@unexpected_lexem_index][:line]}:#{@lexem_buffer[@unexpected_lexem_index][:col]}"
+        raise "Can't parse lexem at #{@lexem_buffer[@unexpected_lexem_index][:line]}:#{@lexem_buffer[@unexpected_lexem_index][:col]} -> #{@consumption_stack.inspect}"
       end
     end # while
   end # parse

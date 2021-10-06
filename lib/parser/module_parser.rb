@@ -23,16 +23,26 @@ module ModuleParser
     modules = []
 
     loop do
+      found = false
+
       consume(:EOLS)
+
       if element = consume(:CONSTANT_DEFINITION)
         constants << element
-      elsif element = consume(:FUNCTION_DEFINITION)
-        functions << element
-      elsif element = consume(:MODULE_DEFINITION)
-        modules << element
-      else
-        break
+        found = true
       end # if
+
+      if element = consume(:FUNCTION_DEFINITION)
+        functions << element
+        found = true
+      end # if
+
+      if element = consume(:MODULE_DEFINITION)
+        modules << element
+        found = true
+      end # if
+
+      break if !found
     end # loop
 
     if !constants.empty? || !functions.empty? || !modules.empty?
