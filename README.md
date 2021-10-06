@@ -14,14 +14,17 @@
 ### Syntax prototype
 
 ```ruby
-## V0.0.3
+## V0.0.5
 # Just a useless function
 calculate: i32(value: i32)
   return value
 end calculate
 
 main: i32(argc: i32, argv: list(string))
-  result: calculate(argc)
+  string_const: "Hello world!"
+  float_const: 3.1415926
+  int_const: argc
+  result: calculate(int_const)
   return result
 end main
 ```
