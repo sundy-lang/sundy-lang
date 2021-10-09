@@ -4,13 +4,19 @@ module ModuleParser
     if name = consume(:LOCAL_ID)
       if consume(:COLON)
         if elements = consume(:MODULE_ELEMENTS)
-          return {
-            type: 'MODULE_DEFINITION',
-            name: name,
-            constants: elements[:constants],
-            functions: elements[:functions],
-            modules: elements[:modules],
-          }
+          puts "* found #{name} module elements"
+          if consume(:END)
+            if name == consume(:LOCAL_ID)              
+              puts "+ parsed #{name} module"
+              return {
+                type: 'MODULE_DEFINITION',
+                name: name,
+                constants: elements[:constants],
+                functions: elements[:functions],
+                modules: elements[:modules],
+              }
+            end # if
+          end # if
         end # if
       end # if
     end # if

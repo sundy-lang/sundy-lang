@@ -5,6 +5,7 @@ module ConstantParser
       if consume(:COLON)
         if value = consume(:FLOAT)
           if consume(:EOLS)
+            puts "* found FLOAT const #{name}"
             return {
               type: 'CONSTANT_DEFINITION',
               name: name,
@@ -16,6 +17,7 @@ module ConstantParser
 
         if value = consume(:INT)
           if consume(:EOLS)
+            puts "* found INT const #{name}"
             return {
               type: 'CONSTANT_DEFINITION',
               name: name,
@@ -27,6 +29,7 @@ module ConstantParser
 
         if value = consume(:STRING)
           if consume(:EOLS)
+            puts "* found STRING const #{name}"
             return {
               type: 'CONSTANT_DEFINITION',
               name: name,
@@ -37,6 +40,7 @@ module ConstantParser
         end # if
 
         if value = consume(:LOCAL_ID_VALUE)
+          puts "* found LOCAL_ID const #{name}"
           return {
             type: 'CONSTANT_DEFINITION',
             name: name,
@@ -46,6 +50,7 @@ module ConstantParser
         end # if
 
         if function_call = consume(:FUNCTION_CALL)
+          puts "* found FUNCTION_CALL const #{name}"
           return {
             type: 'CONSTANT_DEFINITION',
             name: name,

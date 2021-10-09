@@ -14,17 +14,21 @@
 ### Syntax prototype
 
 ```ruby
-## V0.0.5
+## V0.0.6
 # Just a useless function
-calculate: i32(value: i32)
-  return value
-end calculate
+mod1:
+  mod2:
+    calculate: i32(value: i32)
+      return value
+    end calculate
+  end mod2
+end mod1
 
 main: i32(argc: i32, argv: list(string))
   string_const: "Hello world!"
   float_const: 3.1415926
   int_const: argc
-  result: calculate(int_const)
+  result: mod1.mod2.calculate(int_const)
   return result
 end main
 ```
@@ -38,6 +42,7 @@ Currently Sundy is in active development of design and making a working prototyp
 ```
 
 ### Versions
+* v0.0.6 (+ define submodules, call function from submodule)
 * v0.0.5 (+ define string and f64 local constant)
 * v0.0.4 (+ return of result by a function call with i32 arguments or without arguments)
 * v0.0.3 (+ call function wtih i32 argument)

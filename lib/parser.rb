@@ -156,7 +156,7 @@ class Parser
           @root_node[:modules] = elements[:modules]
         end # if
       else
-        raise "Can't parse lexem at #{@lexem_buffer[@unexpected_lexem_index][:line]}:#{@lexem_buffer[@unexpected_lexem_index][:col]} -> #{@consumption_stack.inspect}"
+        raise "Can't parse lexem at #{@lexem_buffer[@unexpected_lexem_index][:line]}:#{@lexem_buffer[@unexpected_lexem_index][:col]}" # -> #{@consumption_stack.inspect}"
       end
     end # while
   end # parse

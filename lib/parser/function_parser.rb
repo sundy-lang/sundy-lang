@@ -5,21 +5,22 @@ module FunctionParser
       if consume(:COLON)
         value_type, args = consume(:FUNCTION_DESCRIPTION)
         if value_type && args
+          puts "* found #{name} function description"
           consume(:EOLS)
           if body = consume(:FUNCTION_BODY)
+            puts "* found #{name} function body"
             consume(:EOLS)
             if consume(:END)
-              if end_name = consume(:LOCAL_ID)
-                if name == end_name
-                  if consume(:EOL)
-                    return {
-                      type: 'FUNCTION_DEFINITION',
-                      name: name,
-                      value_type: value_type,
-                      args: args,
-                      body: body,
-                    }
-                  end # if
+              if name == consume(:LOCAL_ID)
+                if consume(:EOL)
+                  puts "+ parsed #{name} function"
+                  return {
+                    type: 'FUNCTION_DEFINITION',
+                    name: name,
+                    value_type: value_type,
+                    args: args,
+                    body: body,
+                  }
                 end # if
               end # if
             end # if
@@ -118,9 +119,9 @@ module FunctionParser
     end # if
   end # consume_function_description
 
-  # EBNF: FUNCTION_DESCRIPTION = LOCAL_ID OPEN_PRIORITY_BRACE EOLS [FUNCTION_CALL_ARGS] EOLS CLOSE_PRIORITY_BRACE EOL.
+  # EBNF: FUNCTION_DESCRIPTION = ID OPEN_PRIORITY_BRACE EOLS [FUNCTION_CALL_ARGS] EOLS CLOSE_PRIORITY_BRACE EOL.
   def consume_function_call
-    if name = consume(:LOCAL_ID)
+    if name = consume(:ID)
       if consume(:OPEN_PRIORITY_BRACE)
         consume(:EOLS)
         args = consume_function_call_args
@@ -166,12 +167,14 @@ module FunctionParser
   def consume_function_return
     if consume(:RETURN)
       if value = consume(:PRIMITIVE_VALUE)
+        puts "* found PRIMITIVE_VALUE return statement"
         return {
           type: 'RETURN',
           value_type: value[:type],
           value: value[:value],
         }
       elsif value = consume(:LOCAL_ID)
+        puts "* found LOCAL_ID return statement"
         return {
           type: 'RETURN',
           value_type: 'LOCAL_ID',
