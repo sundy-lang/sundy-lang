@@ -92,6 +92,8 @@ module FunctionParser
         body << statement
       elsif statement = consume(:CONSTANT_DEFINITION)
         body << statement
+      elsif statement = consume(:FUNCTION_CALL)
+        body << statement
       else
         break
       end # if
@@ -128,13 +130,13 @@ module FunctionParser
         consume(:EOLS)
 
         if consume(:CLOSE_PRIORITY_BRACE)
-          if consume(:EOL)
+          # if consume(:EOL)
             return {
               type: 'FUNCTION_CALL',
               name: name, 
               body: args,
             }
-          end # if
+          # end # if
         end # if
       end # if
     end # if

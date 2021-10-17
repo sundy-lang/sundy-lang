@@ -17,6 +17,8 @@ class CCompiler
     @constructors = {}
     @functions = {}
     @methods = {}
+
+    @includes = []
   end # initialize
 
   def ast
@@ -44,6 +46,7 @@ class CCompiler
   def parse branch
     case branch[:type]
     when 'CONSTANT_DEFINITION' then parse_constant_definition(branch)
+    when 'FUNCTION_CALL' then parse_function_call(branch)
     when 'FUNCTION_DEFINITION' then parse_function_definition(branch)
     when 'MODULE_DEFINITION' then parse_module_definition(branch)
     when 'RETURN' then parse_function_return(branch)
@@ -71,6 +74,12 @@ class CCompiler
       code << ''
     end # if
     
+    code.unshift('')
+
+    @includes.each do |item|
+      code.unshift("#include #{item}")
+    end # each
+
     code.join("\n")
   end # compile
 

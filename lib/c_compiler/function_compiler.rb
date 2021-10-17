@@ -1,4 +1,16 @@
 module FunctionCompiler
+  def parse_function_call branch
+    if branch[:name][0] == 'SANDBOX'
+      case branch[:name][1]
+      when 'SHOW'
+        @includes << '<stdio.h>' if !@includes.include?('<stdio.h>')
+        "printf(\"%s\", #{branch[:body].map{|r| r[:name]}.join(', ')})"
+      end # case
+    else
+      "#{branch[:full_name]}(#{branch[:body].map{|r| r[:name]}.join(', ')})"
+    end # if
+  end # parse_function_call
+
   def parse_function_definition branch
     if branch[:name] == 'THIS'
       # TODO

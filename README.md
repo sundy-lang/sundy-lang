@@ -14,7 +14,7 @@
 ### Syntax prototype
 
 ```ruby
-## V0.0.6
+## V0.0.7
 # Just a useless function
 mod1:
   mod2:
@@ -28,6 +28,9 @@ main: i32(argc: i32, argv: list(string))
   string_const: "Hello world!"
   float_const: 3.1415926
   int_const: argc
+
+  Sandbox.show(string_const)
+  
   result: mod1.mod2.calculate(int_const)
   return result
 end main
@@ -38,10 +41,11 @@ end main
 Currently Sundy is in active development of design and making a working prototype of transpiler to C based on Ruby.
 
 ```sh
-./sundy examples v003
+./sundy examples v007
 ```
 
 ### Versions
+* v0.0.7 (+ single function call statements, sandbox show method)
 * v0.0.6 (+ define submodules, call function from submodule)
 * v0.0.5 (+ define string and f64 local constant)
 * v0.0.4 (+ return of result by a function call with i32 arguments or without arguments)
