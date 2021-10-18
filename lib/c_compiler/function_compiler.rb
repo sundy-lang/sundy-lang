@@ -1,5 +1,5 @@
 module FunctionCompiler
-  def parse_function_call branch
+  def compile_function_call branch
     if branch[:name][0] == 'SANDBOX'
       case branch[:name][1]
       when 'SHOW'
@@ -9,9 +9,9 @@ module FunctionCompiler
     else
       "#{branch[:full_name]}(#{branch[:body].map{|r| r[:name]}.join(', ')})"
     end # if
-  end # parse_function_call
+  end # compile_function_call
 
-  def parse_function_definition branch
+  def compile_function_definition branch
     if branch[:name] == 'THIS'
       # TODO
     elsif branch[:name][0..4] == 'THIS.'
@@ -36,10 +36,10 @@ module FunctionCompiler
 
       body = []
       branch[:body].each do |child|
-        if instruction = parse(child)
+        if instruction = compile(child)
           body << instruction
         else
-          raise "Cant't parse function instruction for #{JSON.generate(child)}"
+          raise "Cant't compile function instruction for #{JSON.generate(child)}"
         end
       end # each  
 
@@ -49,12 +49,12 @@ module FunctionCompiler
         value_type: branch[:value_type],
       }
     end # if
-  end # parse_function_definition
+  end # compile_function_definition
 
-  def parse_function_return branch
+  def compile_return branch
     case branch[:value_type]
     when 'INTEGER' then "return #{branch[:value]}"
     when 'LOCAL_ID' then "return #{branch[:value]}"
     end # case
-  end # parse_function_return
+  end # compile_function_return
 end

@@ -1,11 +1,11 @@
 module ModuleCompiler
-  def parse_module_definition branch
+  def compile_module_definition branch
     branch[:modules].each do |mod|
-      parse(mod)
+      compile(mod)
     end # each
 
     branch[:functions].each do |function|
-      parse(function)
+      compile(function)
     end # each
-  end # parse_module_definition
+  end # compile_module_definition
 end

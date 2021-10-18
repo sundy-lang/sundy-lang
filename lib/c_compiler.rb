@@ -43,18 +43,17 @@ class CCompiler
     end # case
   end # get_type
 
-  def parse branch
-    case branch[:type]
-    when 'CONSTANT_DEFINITION' then parse_constant_definition(branch)
-    when 'FUNCTION_CALL' then parse_function_call(branch)
-    when 'FUNCTION_DEFINITION' then parse_function_definition(branch)
-    when 'MODULE_DEFINITION' then parse_module_definition(branch)
-    when 'RETURN' then parse_function_return(branch)
-    else raise("Unknown node type for #{branch.inspect}")
-    end # case
-  end # parse
+  def compile branch
+    method_name = "compile_#{branch[:type]}".downcase.to_sym
+puts method_name
+    if methods.include?(method_name)
+      send(method_name, branch)
+    else
+      raise "Unknown node type for #{branch.inspect}"
+    end # if
+  end # compile
 
-  def compile
+  def get_compiled_data
     code = []
     main_function_name = "#{@ast[:name]}_MAIN"
 
@@ -81,7 +80,7 @@ class CCompiler
     end # each
 
     code.join("\n")
-  end # compile
+  end # get_compiled_data
 
   def link_hash data, options = {}
     namespace = options[:namespace]

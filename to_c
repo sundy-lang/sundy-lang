@@ -18,7 +18,7 @@ if f = File.new("#{cli.source_path}/#{cli.source_name}.#{cli.source_extension}",
   # puts '--- AST BEGIN ---'
   # puts JSON.generate(compiler.ast)
   # puts '--- AST END ---'
-  compiler.parse(compiler.ast)
+  compiler.compile(compiler.ast)
   f.close
 else
   puts "❗️ Can't read the AST file '#{cli.source_path}'"
@@ -27,7 +27,7 @@ end # if
 
 # Save C code
 if f = File.new("#{cli.destination_path}/#{cli.source_name}.c", 'w')
-  f.puts(compiler.compile)
+  f.puts(compiler.get_compiled_data)
   f.close
 else
   puts "❗️ Can't save C file '#{cli.destination_path}/#{cli.source_name}.c'"
