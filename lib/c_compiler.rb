@@ -45,7 +45,7 @@ class CCompiler
 
   def compile branch
     method_name = "compile_#{branch[:type]}".downcase.to_sym
-puts method_name
+
     if methods.include?(method_name)
       send(method_name, branch)
     else
