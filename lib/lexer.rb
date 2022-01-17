@@ -93,6 +93,14 @@ class Lexer
 
       while !@char_buffer.empty?
         accumulator << @char_buffer[0]
+        
+        if @char_buffer[0] == "\n"
+          buffer_col = 1
+          buffer_line += 1 
+        else
+          buffer_col += 1
+        end # if
+
         @char_buffer = @char_buffer[1 .. -1]
 
         @@available_lexems.each do |rule, type|
@@ -108,6 +116,14 @@ class Lexer
           else # Regexp
             if !@char_buffer.empty? && (accumulator + @char_buffer[0..1]).match(rule)
               accumulator << @char_buffer[0]
+
+              if @char_buffer[0] == "\n"
+                buffer_col = 1
+                buffer_line += 1 
+              else
+                buffer_col += 1
+              end # if
+
               @char_buffer = @char_buffer[1 .. -1]
             end
 
@@ -122,15 +138,9 @@ class Lexer
               end # if cant get more chars or will broke the rule
             end # if we found a rule
           end # if we check string or regexp rule
+
           break if found
         end # each rule
-
-        if accumulator[-1] == "\n"
-          buffer_col = 1
-          buffer_line += 1 
-        else
-          buffer_col += 1
-        end # if
 
         break if found
       end # while character
