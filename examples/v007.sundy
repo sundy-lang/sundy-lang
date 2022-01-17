@@ -1,0 +1,24 @@
+### Sundy test example for version 0.0.4
+##
+## Features:
+##
+## 0.0.7:
+## * add sandbox macros method for debugging (Sandbox.show(...)) (sandbox is a virtual methods library)
+## * add a function call statement without result set
+
+mod1:
+  mod2:
+    calculate: i32(value: i32)
+      return value
+    end calculate
+  end mod2
+end mod1
+
+main: i32(argc: i32, argv: list(string))
+  string_const: "Hello world!"
+  float_const: 3.1415926
+  int_const: argc
+  Sandbox.show(string_const)
+  result: mod1.mod2.calculate(int_const)
+  return result
+end main
