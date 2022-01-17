@@ -40,17 +40,25 @@ lexer.warning_comments.each do |message|
 end # each
 
 # Save lexems list to JSON file
-
+previous_lexem = nil
 if f = File.new("#{cli.destination_path}/#{cli.source_name}.lex.json", 'w')
   f.puts '['
   f.puts lexer.code.map{ |lexem|
-    '  ' + JSON.generate({
-      line:  lexem.line,
-      col:   lexem.col,
-      type:  lexem.type,
-      value: lexem.value.is_a?(Array) ? lexem.value : lexem.value.to_s.strip,
-    }) 
-  }.join(",\n")
+    # Remove unnecessary EOLs
+    result = if !previous_lexem || (previous_lexem && previous_lexem.type == :EOL && lexem.type == :EOL)
+      nil
+    else
+      '  ' + JSON.generate({
+        line:  lexem.line,
+        col:   lexem.col,
+        type:  lexem.type,
+        value: lexem.value.is_a?(Array) ? lexem.value : lexem.value.to_s.strip,
+      }) 
+    end # if
+
+    previous_lexem = lexem
+    result
+  }.compact.join(",\n")
   f.puts ']'
   f.close
 else
