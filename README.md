@@ -44,11 +44,88 @@ Currently Sundy is in active development of design and making a working prototyp
 ./sundy examples v007
 ```
 
+### Lexemes definition
+
+Single-letter lexemes:
+
+```
+&  - AND
+}  - CLOSE_BLOCK_BRACE
+]  - CLOSE_FILTER_BRACE
+)  - CLOSE_PRIORITY_BRACE
+:  - COLON
+,  - COMMA
+/  - DIV
+\n - EOL
+=  - EQ
+<  - LESS
+-  - MINUS
+>  - MORE
+*  - MUL
+{  - OPEN_BLOCK_BRACE
+[  - OPEN_FILTER_BRACE
+(  - OPEN_PRIORITY_BRACE
+|  - OR
++  - PLUS
+^  - POW
+%  - PROCENT
+\\ - SLASH
+~  - TILDA
+```
+
+Reserved words:
+
+```
+AND
+BREAK
+ELSE
+IF
+IN
+LOOP
+NOT
+OR
+OMNI
+OUT
+PARENT
+RETURN
+THIS
+UNTIL
+WHILE
+XOR
+```
+
+Сomplementary lexemes (cut from the program code):
+
+```
+COMMENT
+DOC
+WARN
+WORD_BREAK
+```
+
+Other lexemes:
+
+```
+BIN
+FLOAT
+HEX
+INT
+LOCAL_ID
+OCT
+PARENT_ID
+REGEXP
+SMART_STRING
+STATIC_ID
+STRING
+TAG
+THIS_ID
+```
+
 ### Versions
 * v0.0.7 (+ single function call statements, sandbox show method)
 * v0.0.6 (+ define submodules, call function from submodule)
 * v0.0.5 (+ define string and f64 local constant)
 * v0.0.4 (+ return of result by a function call with i32 arguments or without arguments)
-* v0.0.3 (+ call function wtih i32 argument)
+* v0.0.3 (+ call function with i32 argument)
 * v0.0.2 (+ define i32 local constant)
 * v0.0.1 (ruby lexer, documentation generator and parser, function "main", blank "array", "i32" and "string" type definitions, "return" reserved word)
