@@ -2,55 +2,62 @@ require_relative 'lexem.rb'
 
 class Lexer
   @@available_lexems = {
-    /\A##[^\n]*\z/                    => :DOC,
-    /\A#![^\n]*\z/                    => :WARN,
-    /\A#[^\n]*\z/                     => :COMMENT,
-    /\A'([^']|\\')*[']?\z/            => :STRING,
-    /\A"([^"]|\\")*["]?\z/            => :STRING,
-    /\A`([^`]|\\`)*[`]?\z/            => :SMART_STRING,
-    /\A\/([^\/]|\\\/)*[\/]?\z/        => :REGEXP,
-    /\A@[a-z0-9_]+\z/i                => :TAG,
-    /\A[0-9_]+\.[0-9_]+\z/            => :FLOAT,
-    /\A[0-9_]+\z/                     => :INT,
-    /\A0x[0-9a-f_]+\z/i               => :HEX,
-    /\A0o[0-7_]+\z/                   => :OCT,
-    /\A0b[01]+\z/                     => :BIN,
-    /\A[;\r\n]+\z/                    => :EOL,
-    /\A[ \t]+\z/                      => :WORD_BREAK,
-    /\AAND\z/i                        => :AND,
-    /\AELSE\z/i                       => :ELSE,
-    /\AIF\z/i                         => :IF,
-    /\ALOOP\z/i                       => :LOOP,
-    /\AOR\z/i                         => :OR,
-    /\APARENT\z/i                     => :PARENT,
-    /\ARETURN\z/i                     => :RETURN,
-    /\ATHIS\z/i                       => :THIS,
-    /\AUNTIL\z/i                      => :UNTIL,
-    /\AWHILE\z/i                      => :WHILE,
-    /\AXOR\z/i                        => :XOR,
-    /\A[a-z_][.a-z0-9_]*[?]?\z/i      => :ID,
-    ':'                               => :COLON,
-    ','                               => :COMMA,
-    '('                               => :OPEN_PRIORITY_BRACE,
-    ')'                               => :CLOSE_PRIORITY_BRACE,
-    '['                               => :OPEN_FILTER_BRACE,
-    ']'                               => :CLOSE_FILTER_BRACE,
-    '{'                               => :OPEN_BLOCK_BRACE,
-    '}'                               => :CLOSE_BLOCK_BRACE,
-    '%'                               => :PROCENT,
-    '~'                               => :TILDA,
-    '\\'                              => :SLASH,
-    '!'                               => :NOT,
-    '&'                               => :AND,
-    '|'                               => :OR,
-    '>'                               => :MORE,
-    '<'                               => :LESS,
-    '='                               => :EQ,
-    '+'                               => :PLUS,
-    '-'                               => :MINUS,
-    '*'                               => :MUL,
-    '/'                               => :DIV,
-    '^'                               => :POW,
+    /\A##[^\n]*\z/                                         => :DOC,
+    /\A#![^\n]*\z/                                         => :WARN,
+    /\A#[^\n]*\z/                                          => :COMMENT,
+    /\A'([^']|\\')*[']?\z/                                 => :STRING,
+    /\A"([^"]|\\")*["]?\z/                                 => :STRING,
+    /\A`([^`]|\\`)*[`]?\z/                                 => :SMART_STRING,
+    /\A\/([^\/]|\\\/)*[\/]?\z/                             => :REGEXP,
+    /\A@[a-z0-9_]+\z/i                                     => :TAG,
+    /\A[0-9_]+\.[0-9_]+\z/                                 => :FLOAT,
+    /\A[0-9_]+\z/                                          => :INT,
+    /\A0x[0-9a-f_]+\z/i                                    => :HEX,
+    /\A0o[0-7_]+\z/                                        => :OCT,
+    /\A0b[01]+\z/                                          => :BIN,
+    /\A[;\r\n]+\z/                                         => :EOL,
+    /\A[ \t]+\z/                                           => :WORD_BREAK,
+    /\AAND\z/i                                             => :AND,
+    /\ABREAK\z/i                                           => :BREAK,
+    /\AELSE\z/i                                            => :ELSE,
+    /\AIF\z/i                                              => :IF,
+    /\AIN\z/i                                              => :IN,
+    /\ALOOP\z/i                                            => :LOOP,
+    /\AOR\z/i                                              => :OR,
+    /\AOMNI\z/i                                            => :OMNI,
+    /\AOUT\z/i                                             => :OUT,
+    /\ARETURN\z/i                                          => :RETURN,
+    /\AUNTIL\z/i                                           => :UNTIL,
+    /\AWHILE\z/i                                           => :WHILE,
+    /\AXOR\z/i                                             => :XOR,
+    /\APARENT(\.[_]*[a-z][a-z0-9_]*)+[?]?\z/i              => :PARENT_ID,
+    /\APARENT\z/i                                          => :PARENT,
+    /\ATHIS(\.[_]*[a-z][a-z0-9_]*)+[?]?\z/i                => :THIS_ID,
+    /\ATHIS\z/i                                            => :THIS,
+    /\A[_]*[a-z][a-z0-9_]*(\.[_]*[a-z][a-z0-9_]*)+[?]?\z/i => :STATIC_ID,
+    /\A[_]*[a-z][a-z0-9_]*[?]?\z/i                         => :LOCAL_ID,
+    ':'                                                    => :COLON,
+    ','                                                    => :COMMA,
+    '('                                                    => :OPEN_PRIORITY_BRACE,
+    ')'                                                    => :CLOSE_PRIORITY_BRACE,
+    '['                                                    => :OPEN_FILTER_BRACE,
+    ']'                                                    => :CLOSE_FILTER_BRACE,
+    '{'                                                    => :OPEN_BLOCK_BRACE,
+    '}'                                                    => :CLOSE_BLOCK_BRACE,
+    '%'                                                    => :PROCENT,
+    '~'                                                    => :TILDA,
+    '\\'                                                   => :BACK_SLASH,
+    '!'                                                    => :NOT,
+    '&'                                                    => :AND,
+    '|'                                                    => :OR,
+    '>'                                                    => :MORE,
+    '<'                                                    => :LESS,
+    '='                                                    => :EQ,
+    '+'                                                    => :PLUS,
+    '-'                                                    => :MINUS,
+    '*'                                                    => :MUL,
+    '/'                                                    => :DIV,
+    '^'                                                    => :POW,
   }
 
   def initialize buffer
@@ -131,7 +138,7 @@ class Lexer
               )
             end # if
           else # Regexp
-            if !@char_buffer.empty? && (accumulator + @char_buffer[0..1]).match(rule)
+            while !@char_buffer.empty? && (accumulator + @char_buffer[0..1]).match(rule)
               accumulator << @char_buffer[0]
 
               if @char_buffer[0] == "\n"
@@ -180,8 +187,8 @@ class Lexer
 
       # Value postpocessing
       case found.type
-      # Save ID as array of normalized strings
-      when :ID then found.value = found.value.upcase.gsub('_', '').split('.')
+      # Save ID as normalized string
+      when :LOCAL_ID, :PARENT_ID, :STATIC_ID, :THIS_ID then found.value = found.value.upcase.gsub('_', '')
       # Save string without quotes
       when :SMART_STRING, :STRING then found.value = found.value[1..-2]
       end
@@ -196,6 +203,8 @@ class Lexer
       when :WARN
         # puts "📕 #{"%-10s" % "#{found.line}:#{found.col}"} Consumed #{("%-12s" % found.type || 'unknown lexem')} #{found.value.inspect}"
         @warning_comments << found.value[2..-1]
+      when nil
+        break
       else
         @code << found
         break
