@@ -13,7 +13,7 @@ module MethodParser
     end # if
   end # consume_method_call
 
-  # EBNF METHOD_CALL_ARG = VALUE.
+  # EBNF METHOD_CALL_ARG = (VALUE | STATIC_ID).
   def consume_method_call_arg
     if value = consume([ :VALUE, :STATIC_ID ])
       return value
