@@ -1,71 +1,124 @@
-## EBNF v0.0.1:
-#  FILE = {MODULE_ELEMENT} EOF.
-#  MODULE_ELEMENT = EOLS | FUNCTION_DEFINITION.
-#  FUNCTION_DEFINITION = ID COLON FUNCTION_DESCRIPTION EOLS FUNCTION_BODY EOLS END ID EOL.
-#  FUNCTION_DESCRIPTION = ID OPEN_PRIORITY_BRACE EOLS [FUNCTION_ARGS_DECLARATION] EOLS CLOSE_PRIORITY_BRACE EOL.
-#  FUNCTION_ARGS_DECLARATION = ID COLON FUNCTION_ARG_TYPE {COMMA EOLS ID COLON FUNCTION_ARG_TYPE}.
-#  FUNCTION_ARG_TYPE = ID [OPEN_PRIORITY_BRACE EOLS [FUNCTION_ARG_TYPE | CONST_VALUE] EOLS CLOSE_PRIORITY_BRACE].
-#  PRIMITIVE_VALUE = INTEGER | STRING.
-#  FUNCTION_BODY = {RETURN}.
-#  RETURN = RETURN PRIMITIVE_VALUE.
-#  EOLS = {EOL}.
-
 require_relative 'parser/constant_parser.rb'
-require_relative 'parser/function_parser.rb'
-require_relative 'parser/module_parser.rb'
+require_relative 'parser/method_parser.rb'
+require_relative 'parser/type_parser.rb'
+require_relative 'parser/value_parser.rb'
 
 class Parser
   include ConstantParser
-  include FunctionParser
-  include ModuleParser
+  include MethodParser
+  include TypeParser
+  include ValueParser
 
   def initialize options
-    @root_node = {
-      type: 'MODULE_DEFINITION',
-      name: options[:source_name].upcase.gsub('_', '').gsub('/', '.'),
-      constants: {},
-      functions: {},
-      modules: {},
-    }
-
-    @current_node = @root_node
+    @debug = !!options[:debug]
+    @errors = []
+    @types = []
+    @source_name = options[:source_name]
     @consumption_stack = []
     @lexem_buffer = options[:lexems]
     @lexem_index = 0
     @unexpected_lexem_index = 0
   end # initialize
 
-  def ast
-    @root_node
-  end
+  def available_lexems
+    [
+      :AND,
+      :BACK_SLASH,
+      :BIN,
+      :BREAK,
+      :CLOSE_BLOCK,
+      :CLOSE_FILTER,
+      :CLOSE_PRIORITY,
+      :COLON,
+      :COMMA,
+      :COMMENT,
+      :DIV,
+      :DOC,
+      :ELSE,
+      :EOL,
+      :EQ,
+      :FALSE,
+      :FLOAT,
+      :HEX,
+      :IF,
+      :IN,
+      :INT,
+      :LESS,
+      :LOCAL_ID,
+      :LOOP,
+      :MINUS,
+      :MORE,
+      :MUL,
+      :NOT,
+      :OCT,
+      :OMNI,
+      :OPEN_BLOCK,
+      :OPEN_FILTER,
+      :OPEN_PRIORITY,
+      :OR,
+      :OUT,
+      :PARENT,
+      :PARENT_ID,
+      :PLUS,
+      :POW,
+      :PROCENT,
+      :REGEXP,
+      :RETURN,
+      :SMART_STRING,
+      :STATIC_ID,
+      :STRING,
+      :TAG,
+      :THIS,
+      :THIS_ID,
+      :TILDA,
+      :TRUE,
+      :UNTIL,
+      :WARN,
+      :WHILE,
+      :WORD_BREAK,
+      :XOR,
+    ]
+  end # available_lexems
 
   # Consume one or group of expected lexems from the buffer
-  def consume expected, options = {}
+  def consume expected_list, options = {}
     saved_code_index = @lexem_index
-    @consumption_stack << [expected, @lexem_buffer[@lexem_index]]
 
-    if lexem_types.include?(expected)
-      if result = @lexem_buffer[@lexem_index]
-        return if expected != result[:type].to_sym
-    
-        @lexem_index += 1
-        return result[:value]
-      end # if
-    else
-      method_name = "consume_#{expected}".downcase.to_sym
-
-      if methods.include?(method_name)
-        if result = send(method_name)
-          return result
+    expected_list = [ expected_list ] if expected_list.is_a?(Symbol)
+    expected_list.each do |expected|
+      puts "#{lexem_coords} Try to consume #{expected}..." if @debug
+      # Consume single lexem
+      if available_lexems.include?(expected)
+        if lexem = @lexem_buffer[@lexem_index]
+          if expected == lexem[:type].to_sym      
+            @lexem_index += 1
+            puts "#{lexem_coords} Consumed #{expected}: #{lexem[:value].inspect}" if @debug
+            return lexem[:value]
+          end # if
         end # if
+      # Consume complex element
       else
-        raise "Unknown method '#{method_name}'"
-      end # if
+        method_name = "consume_#{expected}".downcase.to_sym
+  
+        if methods.include?(method_name)
+          if element = send(method_name)
+            puts "#{lexem_coords} Consumed #{expected}: #{element.inspect}" if @debug
+            return element
+          end # if
+        else
+          @errors << "[#{lexem_coords}] Unknown method 'Parser.#{method_name}'"
+          return
+        end # if
+      end # if  
 
-      @unexpected_lexem_index = @lexem_index if @lexem_index > @unexpected_lexem_index
+      puts "#{lexem_coords} Rollback from #{expected} consumption" if @debug
+      # Rollback lexems to the consumption buffer
       @lexem_index = saved_code_index
-      return
-    end # if
+    end # each
+    
+    # @errors << "[#{lexem_coords}] Can't consume one of: #{expected_list.join(', ')}"
+
+    return
   end # consume
 
   # EBNF: EOLS = {EOL}.
@@ -83,96 +136,34 @@ class Parser
     return i > 0 ? true : nil
   end # consume_eols
 
-  # EBNF: LOCAL_ID = {LATIN_LETTER | UNDERSCORE} {LATIN_LETTER | DECIMAL_DIGIT | UNDERSCORE}.
-  def consume_local_id
-    if id = consume(:ID)
-      local_id = id.first
-      if id.size == 1 && !reserved_words.include?(local_id)
-        return local_id
-      end # if
-    end # if
-  end # consume_local_id
-
-  # EBNF: LOCAL_ID_VALUE = LOCAL_ID EOLS.
-  def consume_local_id_value
-    if id = consume(:LOCAL_ID)
-      if consume(:EOLS)
-        return id
-      end # if
-    end # if
-  end # consume_local_id_value
-
-  # EBNF: PRIMITIVE_VALUE = INTEGER.
-  def consume_primitive_value
-    if value = consume(:INT)
-      return value.to_i
-    end
-  end # consume_primitive_value
-
-  def lexem_types
-    [
-      :DOC,
-      :WARN,
-      :COMMENT,
-      :STRING,
-      :STRING,
-      :SMART_STRING,
-      :REGEXP,
-      :TAG,
-      :FLOAT,
-      :INT,
-      :HEX,
-      :OCT,
-      :BIN,
-      :EOL,
-      :WORD_BREAK,
-      :ELSE,
-      :END,
-      :IF,
-      :IMPORT,
-      :LOOP,
-      :PARENT,
-      :RETURN,
-      :THIS,
-      :ID,
-      :COLON,
-      :COMMA,
-      :OPEN_PRIORITY_BRACE,
-      :CLOSE_PRIORITY_BRACE,
-      :OPEN_FILTER_BRACE,
-      :CLOSE_FILTER_BRACE,
-      :OPEN_BLOCK_BRACE,
-      :CLOSE_BLOCK_BRACE,
-    ]
-  end # lexem_types
+  def lexem_coords
+    i = @lexem_index > 0 ? @lexem_index - 1 : 0
+    "#{@lexem_buffer[i][:line]}:#{@lexem_buffer[i][:col]}"
+  end
 
   # Parse the buffer
   def parse
-    while @lexem_index < @lexem_buffer.size
-      if elements = consume(:MODULE_ELEMENTS)
-        if elements.is_a?(Hash)
-          @root_node[:constants] = elements[:constants]
-          @root_node[:functions] = elements[:functions]
-          @root_node[:modules] = elements[:modules]
-        end # if
+    loop do
+      consume(:EOLS)
+
+      if element = consume(:TYPE_DEFINITION)
+        @types << element 
+      elsif @lexem_index < @lexem_buffer.size
+        @errors << "[#{lexem_coords}] Can't parse the type"
       else
-        raise "Can't parse lexem at #{@lexem_buffer[@unexpected_lexem_index][:line]}:#{@lexem_buffer[@unexpected_lexem_index][:col]}" # -> #{@consumption_stack.inspect}"
-      end
-    end # while
+        break
+      end # if
+
+      if !@errors.empty?
+        puts @errors.join("\n")
+        raise "'#{@source_name}' parse error at #{lexem_coords}"
+      end # if
+    end # loop
+
+    puts "#{lexem_coords} Successfully parsed."
   end # parse
 
-  def reserved_words
-    [
-      'ELSE',
-      'END',
-      'IF',
-      'IMPORT',
-      'LOOP',
-      'PARENT',
-      'PRIVATE',
-      'PUBLIC',
-      'RETURN',
-      'THIS',
-    ]
-  end # reserved_words
+  def types
+    @types
+  end
 end # Parser
