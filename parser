@@ -13,9 +13,9 @@ cli = Cli.new(
 )
 
 # Make the AST from lexems list
-
 if f = File.new("#{cli.source_path}/#{cli.source_name}.#{cli.source_extension}", 'r')
   parser = Parser.new(
+    debug: !!cli.params.keys.include?('DEBUG'),
     lexems: JSON.parse(f.read).map{|r| Hash[r.map{|k,v| [k.to_sym, v]}] },
     source_name: cli.source_name,
   )
@@ -31,7 +31,7 @@ end # if
 # Save the AST to JSON file
 
 if f = File.new("#{cli.destination_path}/#{cli.source_name}.ast.json", 'w')
-  f.puts(JSON.generate(parser.ast))
+  f.puts(JSON.generate(parser.types))
   f.close
 else
   puts "❗️ Can't save the AST file '#{cli.destination_path}/#{cli.source_name}.ast.json'"

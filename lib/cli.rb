@@ -46,6 +46,10 @@ class Cli
     @params['OUT']
   end # destination_path
 
+  def params
+    @params
+  end # params
+
   def release?
     !!@params['RELEASE']
   end # release?
@@ -64,8 +68,6 @@ class Cli
 
   def usage_info
     puts "🔥 Usage: ./#{@options[:util]} --in examples --out tmp hello"
-    puts "   #{'%-10s' % '--src'} Source file"
-    puts "   #{'%-10s' % '--dest'} Output path"
     puts
   end # usage_info
 end
