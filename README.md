@@ -37,6 +37,9 @@ App: Application {
 
     if (argc > 1) {
       result.set(argc)
+      puts("App returns redefined value (which is the same as 'argc' value).")
+    } else {
+      puts("App returns default value (123).")
     } if
 
     # This method returns single integer value (123 or argc) because it has single 'out' parameter which has default value (123).

@@ -1,0 +1,31 @@
+## sundy-sample v0.0.8
+
+# 'App' type extends 'Application' standard library type
+App: Application {
+  # 'App.Meta' extends 'Type' type
+  Meta: {
+    name: 'sundy-sample'
+    iteration: 8
+  } Meta
+
+  # Compiler uses first found 'main' method of 'Application' type as an entrypoint function, here it is 'App.main'
+  Main: (
+    argc: i32, 
+    argv: in array(string), 
+    result: out i32(123),
+  ) {
+    # Name recognition steps: method namespace, current type namespace, global namespace
+    # for example: 'puts' -> 'Application.puts', 'Meta.name' -> 'Application.Meta.name'.
+    # Method call without parameter name is available because it linked to a method with single 'in' parameter.
+    puts(Meta.name)
+
+    if (argc > 1) {
+      result.set(argc)
+      puts("App returns redefined value (which is the same as 'argc' value).")
+    } else {
+      puts("App returns default value (123).")
+    } if
+
+    # This method returns single integer value (123 or argc) because it has single 'out' parameter which has default value (123).
+  } Main
+} App
