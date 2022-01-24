@@ -8,18 +8,20 @@ module TypeParser
         parents = consume(:TYPE_IDS)
         consume(:EOLS)
         if childs = consume(:TYPE_DEFINITION_ELEMENTS)
-          if name == consume(:LOCAL_ID)
-            if consume(:EOLS)
-              return {
-                type: 'TYPE_DEFINITION',
-                name: name,
-                parents: parents,
-                childs: childs,
-              }
-            else
-              @errors << "[#{lexem_coords}] No EOL at the end of '#{name}' type"
-              return
-            end
+          if end_name = consume(:LOCAL_ID)
+            if end_name[:value] == name[:value]
+              if consume(:EOLS)
+                return {
+                  type: 'TYPE_DEFINITION',
+                  name: name[:value],
+                  parents: parents,
+                  childs: childs,
+                }
+              else
+                @errors << "[#{lexem_coords}] No EOL at the end of '#{name}' type"
+                return
+              end # if
+            end # if
           else
             @errors << "[#{lexem_coords}] Wrond name for end of '#{name}' type"
             return
@@ -52,7 +54,7 @@ module TypeParser
     types = []
     loop do
       if type = consume(:LOCAL_ID, :STATIC_ID)
-        types << type
+        types << type[:value]
 
         if consume(:COMMA)
           consume(:EOLS)

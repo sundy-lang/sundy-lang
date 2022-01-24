@@ -6,16 +6,16 @@ module MethodParser
       if args = consume(:METHOD_CALL_ARGS)
         return {
           type: 'METHOD_CALL',
-          name: name,
+          name: name[:value],
           args: args,
         }
       end # if
     end # if
   end # consume_method_call
 
-  # EBNF METHOD_CALL_ARG = (VALUE | STATIC_ID).
+  # EBNF METHOD_CALL_ARG = (VALUE | LOCAL_ID | STATIC_ID).
   def consume_method_call_arg
-    if value = consume([ :VALUE, :STATIC_ID ])
+    if value = consume([ :VALUE, :LOCAL_ID, :STATIC_ID ])
       return value
     end # if
   end # consume_method_call_arg
@@ -54,15 +54,17 @@ module MethodParser
         if args = consume(:METHOD_DEFINITION_ARGS)
           consume(:EOLS)
           if elements = consume(:METHOD_DEFINITION_ELEMENTS)
-            if consume(:LOCAL_ID) == name
-              if consume(:EOLS)
-                return {
-                  type: 'METHOD_DEFINITION',
-                  name: name,
-                  args: args,
-                  elements: elements,
-                }
-              end # if
+            if end_name = consume(:LOCAL_ID)
+              if end_name[:value] == name[:value]
+                if consume(:EOLS)
+                  return {
+                    type: 'METHOD_DEFINITION',
+                    name: name[:value],
+                    args: args,
+                    elements: elements,
+                  }
+                end # if
+              end
             end # if
           end # if
         end # if
@@ -80,8 +82,8 @@ module MethodParser
 
         if value_type = consume(:METHOD_DEFINITION_ARG_TYPE)
           return {
-            direction: (direction || 'IN').upcase,
-            name: name,
+            direction: (direction ? direction[:value] : 'IN').upcase,
+            name: name[:value],
             value_type: value_type,
           }
         end # if
@@ -93,15 +95,15 @@ module MethodParser
   # Return: {...=>...}
   def consume_method_definition_arg_type
     if value = consume(:VALUE)
-      return { value[:type] => value[:value] }
+      return value[:value] #{ value[:type] => value[:value] }
     elsif type = consume([:LOCAL_ID, :STATIC_ID])
       if consume(:OPEN_PRIORITY)
         sub_type = consume(:METHOD_DEFINITION_ARG_TYPE)
         if consume(:CLOSE_PRIORITY)
-          return { type => sub_type }
+          return { type[:value] => sub_type }
         end # if
       else
-        return { type => nil }
+        return { type[:value] => nil }
       end # if
     end # if
   end # consume_method_definition_arg_type
@@ -131,14 +133,16 @@ module MethodParser
     end # if
   end # consume_method_definition_args
 
-  # EBNF METHOD_DEFINITION_ELEMENTS = OPEN_BLOCK <EOL | CONSTANT_DEFINITION | METHOD_CALL | RETURN> CLOSE_BLOCK.
+  # EBNF METHOD_DEFINITION_ELEMENTS = OPEN_BLOCK <[CONSTANT_DEFINITION | IF_STATEMENT | METHOD_CALL | RETURN] EOLS> CLOSE_BLOCK.
   # Return: [...]
   def consume_method_definition_elements
     if consume(:OPEN_BLOCK)
       elements = []
       loop do
-        if element = consume([ :CONSTANT_DEFINITION, :METHOD_CALL, :RETURN ])
-          elements << element
+        if element = consume([ :CONSTANT_DEFINITION, :IF_STATEMENT, :METHOD_CALL, :RETURN ])
+          if consume(:EOLS)
+            elements << element
+          end # if
         elsif !consume(:EOLS)
           break
         end # if

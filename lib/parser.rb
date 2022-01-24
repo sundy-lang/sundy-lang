@@ -86,14 +86,22 @@ class Parser
 
     expected_list = [ expected_list ] if expected_list.is_a?(Symbol)
     expected_list.each do |expected|
+      return if !@errors.empty?
       puts "#{lexem_coords} Try to consume #{expected}..." if @debug
       # Consume single lexem
       if available_lexems.include?(expected)
         if lexem = @lexem_buffer[@lexem_index]
-          if expected == lexem[:type].to_sym      
+          if expected == lexem[:type].to_sym
             @lexem_index += 1
             puts "#{lexem_coords} Consumed #{expected}: #{lexem[:value].inspect}" if @debug
-            return lexem[:value]
+            return case expected
+            when :FALSE then {type: 'BOOL', value: false}
+            when :FLOAT then {type: 'F64', value: lexem[:value].to_f}
+            when :INT then {type: 'I32', value: lexem[:value].to_i}
+            when :STRING then {type: 'STRING', value: lexem[:value].to_s}
+            when :TRUE then {type: 'BOOL', value: false}
+            else {type: lexem[:type], value: lexem[:value]}
+            end #
           end # if
         end # if
       # Consume complex element
@@ -121,6 +129,21 @@ class Parser
     return
   end # consume
 
+  # EBNF BOOL_STATEMENT = LOCAL_ID (LESS | MORE) INT.
+  def consume_bool_statement
+    if left_part = consume(:LOCAL_ID)
+      if comparison_type = consume([:LESS, :MORE])
+        if right_part = consume(:INT)
+          return {
+            type: "COMPARISON_#{comparison_type[:type]}",
+            left: left_part,
+            right: right_part,
+          }
+        end # if
+      end # if
+    end # if
+  end # consume_bool_statement
+
   # EBNF: EOLS = {EOL}.
   def consume_eols
     i = 0
@@ -133,8 +156,74 @@ class Parser
       end # if
     end # loop
 
-    return i > 0 ? true : nil
+    return i > 0 ? {type: 'EOLS', value: i} : nil
   end # consume_eols
+
+  # EBNF IF_CONDITIONS = OPEN_PRIORITY [EOLS] BOOL_STATEMENT [EOLS] CLOSE_PRIORITY.
+  def consume_if_conditions
+    if consume(:OPEN_PRIORITY)
+      consume(:EOLS)
+      if statement = consume(:BOOL_STATEMENT)
+        consume(:EOLS)
+        if consume(:CLOSE_PRIORITY)
+          return statement
+        end # if
+      end # if
+    end # if
+  end # consume_if_conditions
+
+  # EBNF IF_STATEMENT = IF [EOLS] IF_CONDITIONS [EOLS] IF_ELEMENTS <ELSE IF [EOLS] IF_CONDITIONS [EOLS] METHOD_DEFINITION_ELEMENTS> [ELSE [EOLS] METHOD_DEFINITION_ELEMENTS] IF EOLS.
+  # Return: {type: 'IF', variants:{conditions, elements}, else:[...]}
+  def consume_if_statement
+    if consume(:IF)
+      consume(:EOLS)
+      if conditions = consume(:IF_CONDITIONS)
+        consume(:EOLS)
+        if elements = consume(:METHOD_DEFINITION_ELEMENTS)
+          statement = {
+            type: 'IF',
+            variants: [
+              {
+                conditions: conditions,
+                elements: elements,    
+              },
+            ]
+          }
+          loop do
+            variant = nil
+            if consume(:ELSE)
+              if consume(:IF)
+                consume(:EOLS)
+                if conditions = consume(:IF_CONDITIONS)
+                  consume(:EOLS)
+                  if elements = consume(:METHOD_DEFINITION_ELEMENTS)
+                    variant = {
+                      conditions: conditions,
+                      elements: elements,
+                    }
+                  end # if
+                end # if
+              end # if
+            end # if
+            if variant
+              statement[:variants] << variant
+            else
+              break
+            end # if
+          end # loop
+          if consume(:ELSE)
+            consume(:EOLS)
+            if elements = consume(:IF_ELEMENTS)
+              statement[:else] = elements
+            end # if
+          end # if
+          if consume(:IF)
+            return statement
+          end # if
+        end # if
+      end # if
+    end # if
+  end # consume_if_statement
 
   def lexem_coords
     i = @lexem_index > 0 ? @lexem_index - 1 : 0

@@ -7,7 +7,7 @@ module ConstantParser
           if consume(:EOLS)
             return {
               type: 'CONSTANT_DEFINITION',
-              name: name,
+              name: name[:value],
               value_type: value[:type],
               value: value[:value],
             }
