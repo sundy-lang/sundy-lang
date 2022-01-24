@@ -144,6 +144,24 @@ class Parser
     end # if
   end # consume_bool_statement
 
+  # EBNF ELSE_IF_ELEMENT = ELSE IF [EOLS] IF_CONDITIONS [EOLS] METHOD_DEFINITION_ELEMENTS.
+  def consume_else_if_element
+    if consume(:ELSE)
+      if consume(:IF)
+        consume(:EOLS)
+        if conditions = consume(:IF_CONDITIONS)
+          consume(:EOLS)
+          if elements = consume(:METHOD_DEFINITION_ELEMENTS)
+            return {
+              conditions: conditions,
+              elements: elements,
+            }
+          end # if
+        end # if
+      end # if
+    end # if
+  end # consume_else_if_element
+
   # EBNF: EOLS = {EOL}.
   def consume_eols
     i = 0
@@ -172,7 +190,7 @@ class Parser
     end # if
   end # consume_if_conditions
 
-  # EBNF IF_STATEMENT = IF [EOLS] IF_CONDITIONS [EOLS] IF_ELEMENTS <ELSE IF [EOLS] IF_CONDITIONS [EOLS] METHOD_DEFINITION_ELEMENTS> [ELSE [EOLS] METHOD_DEFINITION_ELEMENTS] IF EOLS.
+  # EBNF IF_STATEMENT = IF [EOLS] IF_CONDITIONS [EOLS] IF_ELEMENTS <ELSE_IF_ELEMENT> [ELSE [EOLS] METHOD_DEFINITION_ELEMENTS] IF EOLS.
   # Return: {type: 'IF', variants:{conditions, elements}, else:[...]}
   def consume_if_statement
     if consume(:IF)
@@ -190,22 +208,7 @@ class Parser
             ]
           }
           loop do
-            variant = nil
-            if consume(:ELSE)
-              if consume(:IF)
-                consume(:EOLS)
-                if conditions = consume(:IF_CONDITIONS)
-                  consume(:EOLS)
-                  if elements = consume(:METHOD_DEFINITION_ELEMENTS)
-                    variant = {
-                      conditions: conditions,
-                      elements: elements,
-                    }
-                  end # if
-                end # if
-              end # if
-            end # if
-            if variant
+            if variant = consume(:ELSE_IF_ELEMENT)
               statement[:variants] << variant
             else
               break
@@ -213,7 +216,7 @@ class Parser
           end # loop
           if consume(:ELSE)
             consume(:EOLS)
-            if elements = consume(:IF_ELEMENTS)
+            if elements = consume(:METHOD_DEFINITION_ELEMENTS)
               statement[:else] = elements
             end # if
           end # if
